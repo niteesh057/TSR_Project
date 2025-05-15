@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Sign Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .upload-section {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none; /* Hidden by default */
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #result-text {
+            flex: 1;
+            text-align: left;
+            padding-right: 15px;
+        }
+        #result-image {
+            flex: 0 0 auto;
+        }
+        #result-image img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+        /* Spinner styles */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #007bff; /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Traffic Sign Recognition</h1>
+    <p>Upload an image of a traffic sign to learn what it means and what to do.</p>
+    
+    <div class="upload-section">
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+    
+    <div id="result">
+        <div id="result-text"></div>
+        <div id="result-image"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            const resultImage = document.getElementById('result-image');
+            
+            // Show result div with loader during processing
+            resultText.innerHTML = 'Processing... <span class="loader"></span>';
+            resultImage.innerHTML = '';
+            resultDiv.style.display = 'flex'; // Show result div immediately with loader
+
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.error) {
+                    resultText.innerHTML = `<p style="color: red;">${result.error}</p>`;
+                    resultImage.innerHTML = '';
+                } else {
+                    resultText.innerHTML = `
+                        <h2>Predicted Sign: ${result.prediction}</h2>
+                        <p><strong style="font-size: 18px">Meaning:</strong> ${result.meaning}</p>
+                        <p><strong style="font-size: 18px">Action:</strong> ${result.action}</p>
+                    `;
+                    resultImage.innerHTML = `<img src="data:image/jpeg;base64,${result.image}" alt="Uploaded Sign">`;
+                }
+            } catch (error) {
+                resultText.innerHTML = '<p style="color: red;">An error occurred. Please try again.</p>';
+                resultImage.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
